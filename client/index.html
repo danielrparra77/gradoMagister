@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Page Title</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+		<link href="/client/css/signin.css" rel="stylesheet">
+		<link href="/client/css/game.css" rel="stylesheet">
+		<!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
+		<script src="/client/js/socket.js">
+		</script>
+	</head>
+	<body class="text-center">
+		<div class="bodysign">
+			<div id="signDiv" class="form-signin">
+				<h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+				<label for="signDiv-username" class="sr-only">Username: </label><input id="signDiv-username" type="text" class="form-control"></input>
+				<label for="signDiv-password" class="sr-only">Password: </label><input id="signDiv-password" type="password" class="form-control"></input>
+				<button class="btn btn-lg btn-primary btn-block" id="signDiv-signIn">Sign In</button>
+				<button class="btn btn-lg btn-primary btn-block" id="signDiv-signUp">Sign Up</button>
+			</div>
+		</div>
+		<div id="gameDiv" style="display:none;" class="container">
+			<div class="header clearfix">
+		        <nav>
+		          <ul class="nav nav-pills float-right">
+		            <li class="nav-item">
+		              <button onclick="changeMap()">
+						Change Map
+					</button>
+		            </li>
+		          </ul>
+		        </nav>
+		        <h3 class="text-muted">Project name</h3>
+		      </div>
+			<div id="game" class="jumbotron" style="position:absolute;width:564px;height:628px">
+				<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
+				<canvas id="ctx-ui" width="500" height="500" style="display:none; border:1px solid #000000;"></canvas>
+			</div>
+			
+			<div id="belowGame" style="margin-top:670px">	
+				<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+					<div>Hello!</div>
+				</div>
+
+				<form id="chat-form">
+					<input id="chat-input" type="text" style="width:500px"></input>
+				</form>
+			</div>
+		</div>
+		<div id="questionGame" style="display:none;">	
+			<div id="question-description" style="width:500px;height:100px;overflow-y:scroll">
+			</div>
+			<div id="question-respuesta">
+			</div>
+			<button onclick="EnviarRespuesta()">
+				enviar Respuesta
+			</button>
+		</div>
+		<script src="/client/js/game.js"></script>
+		<script src="/client/js/SignIn.js"></script>
+		<script src="/client/js/chat.js"></script>
+	</body>
+</html>
