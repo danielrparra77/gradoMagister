@@ -1,43 +1,38 @@
-	var WIDTH = 500;
-	var HEIGHT = 500;
+$(document).ready(function(){
+	window.WIDTH = 500;
+	window.HEIGHT = 500;
 	window.socket = io();
 	var socket = window.socket;
 	var self = this;
+	var flagsImport={
+		maps:false,
+		bullet:false,
+		player:false
+	};
 	
-	import('/client/js/map.js').then(module => {
-		self.maps = module.exportMapsModule({});
-		console.log("importado");
+	$('#cambioEscenario').on('click', function(e){
+		return self.maps.changeMap();
 	});
-
-	import('/client/js/player.js').then(module => {
-		self.Player = module.exportPlayersModule();
-		console.log("importado player");
-	});
-	
-	import('/client/js/Bullet.js').then(module => {
-		self.Bullet = module.exportBulletModule();
-		console.log("importado bullet");
-	});
-	
-	function changeMap(){
-		return this.maps.changeMap();
-	}
 		
 	//game
-	var Img = {};
+	window.Img = {};
+	var Img = window.Img;
 	Img.bullet = new Image();
 	Img.bullet.src = '/client/img/bullet.png';
 	
 	var ctxUI = document.getElementById("ctx");
 	var ctx = ctxUI.getContext("2d");
+	window.ctx = ctx;
 	var ctxUi = document.getElementById("ctx-ui").getContext("2d");
 	ctxUi.font = '30px Arial';
 	
 	var selfId = null;
+	var username = null;
 
 	socket.on('init',function(data){	
 		if(data.selfId)
 			selfId = data.selfId;
+		window.selfId = selfId;
 		//{ player : [{id:123,number:'1',x:0,y:0},{id:1,number:'2',x:0,y:0}], bullet: []}
 		for(var i = 0 ; i < data.player.length; i++){
 			new self.Player(data.player[i]);
@@ -46,10 +41,40 @@
 			new self.Bullet(getDataBullet(data.bullet[i]));
 		}
 	});
+
+	socket.on('construct',function(data){
+		if(flagsImport.maps === false){
+			flagsImport.maps = true;
+			import('/client/js/map.js').then(module => {
+				self.maps = module.exportMapsModule({});
+				self.maps.setMetaMap(data.metaMap);
+				console.log("importado maps");
+			});
+		}
+		if(flagsImport.player === false){
+			flagsImport.player = true;
+			import('/client/js/player.js').then(module => {
+				self.Player = module.exportPlayersModule();
+				console.log("importado player");
+			});
+		}
+		if(flagsImport.bullet === false){
+			flagsImport.bullet = true;
+			import('/client/js/Bullet.js').then(module => {
+				self.Bullet = module.exportBulletModule();
+				console.log("importado bullet");
+			});
+		}
+	});
+
+	socket.on("updateScore",function(scores){
+		console.log(scores);
+	})
 	
 	socket.on('update',function(data){
 		//{ player : [{id:123,x:0,y:0},{id:1,x:0,y:0}], bullet: []}
-		console.log('updating from server');
+		if(!selfId)
+			return;
 		for(var i = 0 ; i < data.player.length; i++){
 			var pack = data.player[i];
 			var p = self.Player.list[pack.id];
@@ -79,8 +104,19 @@
 			}
 		}
 	});
+
+	socket.on('updateSolidVisible',function(data){
+		let solids = data.solids;
+		let player = self.Player.list[selfId];
+		for(var i = 0 ; i < solids.length; i++){
+			let solid = self.maps.getSolid(player.map,solids[i].id);
+			solid.setVisible(solids[i].visible,player.x,player.y);
+		}
+	});
 	
 	socket.on('remove',function(data){
+		if(!selfId)
+			return;
 		//{player:[12323],bullet:[12323,123123]}
 		for(var i = 0 ; i < data.player.length; i++){
 			delete self.Player.list[data.player[i]];
@@ -100,23 +136,32 @@
 	var questionRespuesta = document.getElementById('question-respuesta');
 	var pregunta = {};
 
-	socket.on('nuevaPregunta',function(data){
-		pregunta=data;
-		console.log(pregunta);
-		while (questionDescription.firstChild)
-		    questionDescription.removeChild(questionDescription.firstChild);
-		questionDescription.innerHTML += '<div>' + data.pregunta + '</div>';
-		while (questionRespuesta.firstChild)
-		    questionRespuesta.removeChild(questionRespuesta.firstChild);
-		if (data.tipo=="multiple")
-			for (var i = 0 ; i < data.posiblesrespuestas.length; i++)
-				questionDescription.innerHTML += '<input type="radio" name="respuesta" value="' + data.posiblesrespuestas[i] + '">' + data.posiblesrespuestas[i] + '<br>';
-		else if	(data.tipo=="abierta")
-				questionDescription.innerHTML += '<input type="text" name="respuesta"></input>'
+	socket.on('nuevaPregunta',function(p){
+		pregunta = p;
+		if (pregunta.escenario === 'disparos'){
+			while (questionDescription.firstChild)
+			    questionDescription.removeChild(questionDescription.firstChild);
+			questionDescription.innerHTML += '<div>' + pregunta.pregunta + '</div>';
+			while (questionRespuesta.firstChild)
+			    questionRespuesta.removeChild(questionRespuesta.firstChild);
+			if (pregunta.tipo=="multiple")
+				for (var i = 0 ; i < pregunta.posiblesrespuestas.length; i++)
+					questionDescription.innerHTML += '<input type="radio" name="respuesta" value="' + pregunta.posiblesrespuestas[i] + '">' + pregunta.posiblesrespuestas[i] + '<br>';
+			else if	(pregunta.tipo=="abierta")
+					questionDescription.innerHTML += '<input type="text" name="respuesta"></input>'
+		}
+		if (pregunta.escenario === 'laberintoParejas'){
+			console.log('laberinto');
+			console.log(pregunta.pregunta);
+			if (!($('#modalLaberintoPareja').is(':visible'))){
+				$('#modalLaberintoPareja div[name ="pregunta"]').text(pregunta.pregunta);
+				$('#modalLaberintoPareja').modal('show');
+			}
+		}
 	});
 
 	//UI
-	var EnviarRespuesta = function(){
+	$("#EnvioRespustPanelPregunta").click(function(e){
 		if (pregunta.tipo=="abierta")
 			socket.emit('EnviarRespuesta',{respuesta:document.getElementsByName("respuesta")[0].value,id:pregunta.id});
 		else if (pregunta.tipo=="multiple") {
@@ -127,7 +172,7 @@
 			        rate_value = rates[i].value;
 			socket.emit('EnviarRespuesta',{respuesta:rate_value,id:pregunta.id});
 		}
-	}
+	});
 	
 
 
@@ -142,7 +187,7 @@
 		drawScore();
 		for(var i in self.Player.list)
 			self.Player.list[i].draw();
-		for(var i in Bullet.list)
+		for(var i in self.Bullet.list)
 			self.Bullet.list[i].draw();
 	},40);
 	
@@ -201,25 +246,40 @@
 	}
 	
 	document.onmousedown = function(event){
-		socket.emit('keyPress',{inputId:'attack',state:true});
+		if (selfId !== null){
+			var player = self.Player.list[selfId];
+			if (player.map==='field')
+				socket.emit('keyPress',{inputId:'attack',state:true});
+		}
 	}
 	document.onmouseup = function(event){
-		socket.emit('keyPress',{inputId:'attack',state:false});
+		if (selfId !== null){
+			socket.emit('keyPress',{inputId:'attack',state:false});
+		}
 	}
 	document.onmousemove = function(event){
 		if (selfId !== null){
-			var x = -500 + event.clientX - 8;
-			var y = -500 + event.clientY - 8;
-			console.log(ctxUI.getBoundingClientRect().top+" "+ctxUI.getBoundingClientRect().left);
+			let canvas = $("#game #ctx");
+			var x = -(ctxUI.getBoundingClientRect().left+canvas.width()/2) + event.clientX;
+			var y = -(ctxUI.getBoundingClientRect().top+canvas.height()/2) + event.clientY;
 			var angle = 180*Math.atan2(y
 				, x)/Math.PI;
+				console.log(x+" "+y+" "+angle);
 			socket.emit('keyPress',{inputId:'mouseAngle',state:angle});
 			var player = self.Player.list[selfId];
 			player.aimAngle = angle;
 		}
-
 	}
 	
 	document.oncontextmenu = function(event){
 		event.preventDefault();
 	}
+
+	window.onbeforeunload = function () {
+		socket.emit('disconnect',{});
+	 }
+
+	 $("#guardarCambios").click(function(){
+		socket.emit('guardarCambios',{});
+	 });
+});	 

@@ -13,7 +13,7 @@ export function exportBulletModule(param){
 
 	if (!hasEntity){
 	  window[ENTITY_KEY] = {
-	    entity: "Player"
+	    entity: "Bullet"
 	  };
 	}
 
@@ -26,6 +26,7 @@ export function exportBulletModule(param){
 		self.y = initPack.y;
 		self.map = initPack.map;
 		self.Player = initPack.Player;
+		var Img = window.Img;
 		
 		self.draw = function(){
 			if(self.Player.map !== self.map)
@@ -33,10 +34,10 @@ export function exportBulletModule(param){
 			var width = Img.bullet.width/2;
 			var height = Img.bullet.height/2;
 			
-			var x = self.x - self.Player.x + WIDTH/2;
-			var y = self.y - self.Player.y + HEIGHT/2;
+			var x = self.x - self.Player.x + window.WIDTH/2;
+			var y = self.y - self.Player.y + window.HEIGHT/2;
 			
-			ctx.drawImage(Img.bullet,
+			window.ctx.drawImage(Img.bullet,
 				0,0,Img.bullet.width,Img.bullet.height,
 				x-width/2,y-height/2,width,height);
 		}

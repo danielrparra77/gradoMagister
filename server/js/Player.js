@@ -9,10 +9,13 @@ var Player = function(param){
 		param.height = HEIGHT;	
 	if(!param.weight)
 		param.weight = WIGHT;
-	console.log(param.height+" "+param.weight);	
 	var self = Entity(param);
-	self.number = "" + Math.floor(10 * Math.random());
 	self.username = param.username;
+	self.name = param.name;
+	self.date = param.date;
+	self.gender = param.gender;
+	self.isNew = param.isNew;
+	self.number = "" + Math.floor(10 * Math.random());
 	self.pressingRight = false;
 	self.pressingLeft = false;
 	self.pressingUp = false;
@@ -20,9 +23,28 @@ var Player = function(param){
 	self.pressingAttack = false;
 	self.mouseAngle = 0;
 	self.maxSpd = 10;
-	self.hp = 10;
 	self.hpMax = 10;
-	self.score = 0;
+	self.hp = 10;
+	self.score = {
+		disparos:{
+			juegosJugados:0,
+			juegosGanados:0,
+			preguntasContestadas:0,
+			preguntasAcertadas:0
+		},
+		laberinto:{
+			jeugosJugados:0,
+			JuegosGanados:0,
+			preguntasContestadas:0,
+			PreguntasAcertadas:0
+		}
+	};
+	if(typeof param.score !== "undefined"){
+		self.score = param.score;
+	}
+	if(typeof param.hp !== "undefined"){
+		self.hp = param.hp;
+	}
 	self.counterBullet = 5;
 	self.maxShoots = MAXSHOOTS;
 	self.type = "Player";
@@ -51,6 +73,13 @@ var Player = function(param){
 			y:self.y,
 			map:self.map,
 		});
+	}
+
+	var super_onDiscconect = self.onDisconnect;
+	self.onDisconnect = function(socket){
+		delete Player.list[self.id];
+		super_onDiscconect(socket);
+		global.removePack.player.push(socket.id);
 	}
 	
 	self.updateSpd = function(){
@@ -84,23 +113,72 @@ var Player = function(param){
 		};		
 	}
 	self.getUpdatePack = function(){
-		return {
+		let data = {
 			id:self.id,
 			x:self.x,
 			y:self.y,
 			hp:self.hp,
 			score:self.score,
 			map:self.map,
-		}	
+			username:self.username,
+			name:self.name,
+			date:self.date,
+			gender:self.gender
+		};
+		if (self.isNew == true){
+			data.pass = self.pass;
+		}
+		return data;
+	}
+
+	self.savePlayerProgress = function (con,callback){
+		console.log("para guardar los datos de este player");
+		//con.insertOneData("users",self.getUpdatePack(),res=>{
+		con.upsertOneData("users",{username:self.username},self.getUpdatePack(),res=>{
+			console.log("Data insertada");
+			self.isNew = false;
+			callback(res);
+		});
+	}
+
+	self.updateScore = function (scoreLink,counter,response){
+		if (scoreLink.length == 0)
+			return response+=counter;
+		let link = scoreLink[0];
+		scoreLink.shift();
+		response[link]=self.updateScore(scoreLink,counter,response[link]);
+		return response;
+	}
+
+	self.actualizarScore = function(scoreLink,counter){
+		self.score = self.updateScore(scoreLink,counter,self.score);
+		let scores = [];
+		for (let pl in Player.list){
+			let score = self.score;
+			score.username = self.username;
+			scores.push(score);
+		}
+		self.socket.emit("updateScore",scores);
 	}
 	
 	Player.list[self.id] = self;
 	
 	global.initPack.player.push(self.getInitPack());
+	if (param.isNew == true){
+		self.pass = param.pass;
+		self.savePlayerProgress(param.con,param.callback);
+	}
 	return self;
 }
 
 Player.list = {};
+
+Player.findUser = function(con,params,callback){
+	con.findOneData("users",params,res=>{
+		console.log(res);
+		callback(res);
+	});
+}
 
 global.PlayerList = Player.list;
 

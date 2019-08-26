@@ -5,13 +5,17 @@ var express = require('express');
 var app = express();
 var serv = require('http').Server(app);
 var io = require('socket.io')(serv,{});
+global.io = io;
 var Bullet = require(__dirname + '/server/js/Bullet.js');
-var Player = require(__dirname + '/server/js/Player.js');
-var Evaluador = require(__dirname + '/server/js/Evaluador.js');
-var objEvaluador = Evaluador();
+global.Player = require(__dirname + '/server/js/Player.js');
+var MongoConnector = require(__dirname + '/server/js/MongoConnector.js');
+var Disparos = require(__dirname + '/server/escenarios/escenario1/Disparos.js');
+var mapas = require(__dirname+'/server/js/mapas');
+MongoConnector = MongoConnector();
+mapas = mapas.mapas(MongoConnector);
 
 global.initPack = {player:[],bullet:[]};
-global.removePack = {player:[],bullet:[]};
+global.removePack = {player:[],bullet:[]}; 
 
 
 app.get('/',function(req, res) {
@@ -24,45 +28,29 @@ console.log("Server started.");
 
 var SOCKET_LIST = {};
 
-var metaMap = {
-	forest:{
-		objects: [{
-			id:'rock',
-			widthParts:2,
-			heigthParts:2,
-			width:20,
-			height:20
-		}],
-		width:500,
-		height:500,
-		position:{
-			rock:[
-			{
-				width:0,
-				height:20,
-			},{
-				width:0,
-				height:40,
-			}
-			]
-		}
-	},
-	field:{
-		objects: [],
-		width:500,
-		height:500,
-		position:{}
-	},
-}
+global.Player.onConnect = function(socket,data){
+	let map;
+	if (typeof data.map == "undefined"){
+		map = 'forest';
+		if(Math.random() < 0.5)
+			map = 'field';
+	}
+	else
+		map = data.map;
+	socket.emit('panelEscenarios',mapas.cambioMapa(map));
+	data.id = socket.id;
+	data.map = map;
+	var player = Player(data);
+	player.socket = socket;
+	player.Disparos = Disparos({
+		player:player
+	});
 
-Player.onConnect = function(socket,username){
-	var map = 'forest';
-	if(Math.random() < 0.5)
-		map = 'field';
-	var player = Player({
-		username:username,
-		id:socket.id,
-		map:map,
+	player.LaberintoParejas = mapas.getLaberintoParejas();
+	socket.on("guardarCambios",function(data){
+		player.savePlayerProgress(MongoConnector,res=>{
+			console.log("guardado");
+		});
 	});
 	socket.on('keyPress',function(data){
 		if(data.inputId === 'left')
@@ -71,10 +59,8 @@ Player.onConnect = function(socket,username){
 			player.pressingRight = data.state;
 		else if(data.inputId === 'up')
 			player.pressingUp = data.state;
-		else if(data.inputId === 'down')
+		else if( data.inputId === 'down')
 			player.pressingDown = data.state;
-		else if(data.inputId === 'attack')
-			player.pressingAttack = data.state;
 		else if(data.inputId === 'mouseAngle')
 			player.mouseAngle = data.state;
 	});
@@ -84,6 +70,7 @@ Player.onConnect = function(socket,username){
 			player.map = 'forest';
 		else
 			player.map = 'field';
+		socket.emit('panelEscenarios',mapas.cambioMapa(player.map));
 	});
 	
 	socket.on('sendMsgToServer',function(data){
@@ -93,8 +80,8 @@ Player.onConnect = function(socket,username){
 	});
 	socket.on('sendPmToServer',function(data){ //data:{username,message}
 		var recipientSocket = null;
-		for(var i in Player.list)
-			if(Player.list[i].username === data.username)
+		for(var i in global.Player.list)
+			if(global.Player.list[i].username === data.username)
 				recipientSocket = SOCKET_LIST[i];
 		if(recipientSocket === null){
 			socket.emit('addToChat','The player ' + data.username + ' is not online.');
@@ -104,67 +91,44 @@ Player.onConnect = function(socket,username){
 		}
 	});
 	
+	/*para despues de haber iniciado*/
 	socket.emit('init',{
 		selfId:socket.id,
-		player:Player.getAllInitPack(),
-		bullet:Bullet.getAllInitPack(),
-	})
-
-	//emitir nuevas preguntas a los clientes
-	socket.emit('nuevaPregunta',objEvaluador.getPreguntaAleatoria());
-	setInterval(function(){
-		socket.emit('nuevaPregunta',objEvaluador.getPreguntaAleatoria());
-	},20000);
-	
-	socket.on('EnviarRespuesta',function(data){
-		if(!DEBUG)
-			return;
-		var correto = objEvaluador.resolverPregunta(data.id,data.respuesta);
-		console.log(correto);	
-		if (correto)
-			player.counterBullet+=5;
-	});	
+		username:data.username,
+		player:global.Player.getAllInitPack(),
+		bullet:Bullet.getAllInitPack()
+	});
 }
-Player.getAllInitPack = function(){
+global.Player.getAllInitPack = function(){
 	var players = [];
-	for(var i in Player.list)
-		players.push(Player.list[i].getInitPack());
+	for(var i in global.Player.list)
+		players.push(global.Player.list[i].getInitPack());
 	return players;
 }
 
-Player.onDisconnect = function(socket){
+/*Player.onDisconnect = function(socket){
 	delete Player.list[socket.id];
 	global.removePack.player.push(socket.id);
-}
-Player.update = function(){
+}*/
+global.Player.update = function(){
 	var pack = [];
-	for(var i in Player.list){
-		var player = Player.list[i];
+	for(var i in global.Player.list){
+		var player = global.Player.list[i];
 		player.update();
 		pack.push(player.getUpdatePack());		
 	}
 	return pack;
 }
 
-var DEBUG = true;
+global.DEBUG = true;
 
 var isValidPassword = function(data,cb){
-	return cb(true);
-	/*db.account.find({username:data.username,password:data.password},function(err,res){
-		if(res.length > 0)
-			cb(true);
+	global.Player.findUser(MongoConnector,{username:data.username, pass: data.password},function(res){
+		if(res !== null)
+			cb(true,res);
 		else
-			cb(false);
-	});*/
-}
-var isUsernameTaken = function(data,cb){
-	return cb(false);
-	/*db.account.find({username:data.username},function(err,res){
-		if(res.length > 0)
-			cb(true);
-		else
-			cb(false);
-	});*/
+			cb(false,res);
+	});
 }
 var addUser = function(data,cb){
 	return cb();
@@ -177,9 +141,9 @@ io.sockets.on('connection', function(socket){
 	socket.id = Math.random();
 	SOCKET_LIST[socket.id] = socket;
 	socket.on('signIn',function(data){ //{username,password}
-		isValidPassword(data,function(res){
+		isValidPassword(data,function(res,player){
 			if(res){
-				Player.onConnect(socket,data.username);
+				global.Player.onConnect(socket,player);
 				socket.emit('signInResponse',{success:true});
 			} else {
 				socket.emit('signInResponse',{success:false});			
@@ -187,25 +151,40 @@ io.sockets.on('connection', function(socket){
 		});
 	});
 	socket.on('signUp',function(data){
-		isUsernameTaken(data,function(res){
-			if(res){
-				socket.emit('signUpResponse',{success:false});		
-			} else {
-				addUser(data,function(){
-					socket.emit('signUpResponse',{success:true});					
-				});
-			}
-		});		
+		if (data.username.length <=0){
+			socket.emit('signUpResponse',{success:false});
+		}
+		else{
+			global.Player.findUser(MongoConnector,{username:data.username},function(res){
+				if(res !== null){
+					socket.emit('signUpResponse',{success:false});		
+				} else {
+					data.isNew = true;
+					data.con = MongoConnector;
+					data.callback = function (res){
+						if (res.ok === 1)
+							socket.emit('signUpResponse',{success:true});
+					}
+					global.Player.onConnect(socket,data);
+				}
+			});	
+		}	
 	});
 	
 	
 	socket.on('disconnect',function(){
 		delete SOCKET_LIST[socket.id];
-		Player.onDisconnect(socket);
+		//global.Player.onDisconnect(socket);
+		console.log(global.Player.list);
+		if (global.Player.list.length === 0)
+			return;
+		if (typeof global.Player.list[socket.id] == 'undefined')
+			return;
+		global.Player.list[socket.id].onDisconnect(socket);
 	});
 	
 	socket.on('evalServer',function(data){
-		if(!DEBUG)
+		if(!global.DEBUG)
 			return;
 		var res = eval(data);
 		socket.emit('evalAnswer',res);		
@@ -215,15 +194,20 @@ io.sockets.on('connection', function(socket){
 
 setInterval(function(){
 	var pack = {
-		player:Player.update(),
+		player:global.Player.update(),
 		bullet:Bullet.update(),
 	}
+	io.sockets.emit('updateScenary',pack);
 	
 	for(var i in SOCKET_LIST){
 		var socket = SOCKET_LIST[i];
 		socket.emit('init',global.initPack);
 		socket.emit('update',pack);
 		socket.emit('remove',global.removePack);
+		/*apenas el cliente entro a la plataforma*/
+		socket.emit('construct',{
+			metaMap:mapas.getMetamap()
+		});
 	}
 	global.initPack.player = [];
 	global.initPack.bullet = [];

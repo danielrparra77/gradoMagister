@@ -1,3 +1,4 @@
+$(document).ready(function(){
 	//chat
 	var chatText = document.getElementById('chat-text');
 	var chatInput = document.getElementById('chat-input');
@@ -26,3 +27,4 @@
 			socket.emit('sendMsgToServer',chatInput.value);
 		chatInput.value = '';		
 	}
+});	 

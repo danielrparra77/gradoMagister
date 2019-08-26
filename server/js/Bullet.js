@@ -51,8 +51,9 @@ var Bullet = function(param){
 								
 				if(p.hp <= 0){
 					var shooter = PlayerList[self.parent];
-					if(shooter)
-						shooter.score += 1;
+					if(shooter){
+						shooter.actualizarScore(["disparos","juegosGanados"],1);
+					}
 					p.hp = p.hpMax;
 					p.x = Math.random() * 500;
 					p.y = Math.random() * 500;					

@@ -23,6 +23,18 @@ var Map = function(param){
 	self.initMap = function(){
 
 	}
+
+	self.cambioMapa = function(mapa){
+		var panalesaMostrar = [];
+		if (mapa === 'field'){
+			panalesaMostrar.add('questionGame')
+		}
+		if (mapa === 'forest'){
+		}
+		return {
+			paneles:panalesaMostrar
+		};
+	};
 	
 	return self;
 }

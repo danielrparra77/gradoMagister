@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<title>Page Title</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 		<link href="/client/css/signin.css" rel="stylesheet">
@@ -18,25 +19,71 @@
 				<label for="signDiv-password" class="sr-only">Password: </label><input id="signDiv-password" type="password" class="form-control"></input>
 				<button class="btn btn-lg btn-primary btn-block" id="signDiv-signIn">Sign In</button>
 				<button class="btn btn-lg btn-primary btn-block" id="signDiv-signUp">Sign Up</button>
+				<div id="myModal" class="modal">
+					<!-- Modal content -->
+					<div class="modal-content">
+						<form  id="singUpForm">
+							<span class="close">&times;</span>
+							Nombre completo:<br>
+							<input type="text" name="name"><br>
+							Fecha de nacimiento:<br>
+							<input type="date" name="date"><br>
+							Sexo:<br>
+							<input type="text" name="gender"><br>
+							Nombre de usuario:<br>
+							<input type="text" name="username"><br>
+							Contraseña:<br>
+							<input type="password" name="pass"><br>
+							Repetir contraseña:<br>
+							<input type="password" name="repPass"><br>
+							<input type="submit" value="Submit">
+						</form>
+					</div>
+				</div>
 			</div>
 		</div>
-		<div id="gameDiv" style="display:none;" class="container">
+		<div id="gameDiv" style="display:none;" class="container-fluid">
 			<div class="header clearfix">
 		        <nav>
 		          <ul class="nav nav-pills float-right">
 		            <li class="nav-item">
-		              <button onclick="changeMap()">
-						Change Map
-					</button>
+		              	<button id ="cambioEscenario">
+							Change Map
+						</button>
+						<button id ="guardarCambios">
+						  	Save Changes
+					  	</button>
 		            </li>
 		          </ul>
 		        </nav>
 		        <h3 class="text-muted">Project name</h3>
-		      </div>
-			<div id="game" class="jumbotron" style="position:absolute;width:564px;height:628px">
-				<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
-				<canvas id="ctx-ui" width="500" height="500" style="display:none; border:1px solid #000000;"></canvas>
-			</div>
+			  </div>
+			  <div class="row">
+				<div class="col-xs-12 col-6" style="height:628px;">
+					<div id="game" class="jumbotron" style="position:absolute;width:564px;height:100%;">
+						<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
+						<canvas id="ctx-ui" width="500" height="500" style="display:none; border:1px solid #000000;"></canvas>
+					</div>
+				</div>
+				<div class="col-xs-12 col-3">			
+					<!--Panel de preguntas para escenario de disparos-->
+					<div id="questionGame" style="display:none;">	
+						<div id="question-description" style="width:100%;height:100%;overflow-y:scroll">
+						</div>
+						<div id="question-respuesta">
+						</div>
+						<button id="EnvioRespustPanelPregunta">
+							enviar Respuesta
+						</button>
+					</div>
+					<!--Panel de preguntas para escenario de disparos-->
+					<div">	
+						<div id="tablero de avances">
+							estos serán los avances
+						</div>
+					</div>
+				</div>
+			  </div>
 			
 			<div id="belowGame" style="margin-top:670px">	
 				<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
@@ -48,14 +95,25 @@
 				</form>
 			</div>
 		</div>
-		<div id="questionGame" style="display:none;">	
-			<div id="question-description" style="width:500px;height:100px;overflow-y:scroll">
-			</div>
-			<div id="question-respuesta">
-			</div>
-			<button onclick="EnviarRespuesta()">
-				enviar Respuesta
-			</button>
+		<!-- Modal de preguntas para escenario de laberinto-->
+		<div id="modalLaberintoPareja" class="modal" tabindex="-1" role="dialog">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Modal title</h5>
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          <span aria-hidden="true">&times;</span>
+		        </button>
+		      </div>
+		      <div class="modal-body" name="pregunta">
+		        <p>Modal body text goes here.</p>
+		      </div>
+		      <div class="modal-footer">
+		        <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+		        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		      </div>
+		    </div>
+		  </div>
 		</div>
 		<script src="/client/js/game.js"></script>
 		<script src="/client/js/SignIn.js"></script>

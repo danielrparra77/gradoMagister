@@ -4,7 +4,10 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
+    "assert": "^1.4.1",
     "express": "^4.16.4",
+    "mongodb": "^3.2.3",
+    "nodemon": "^1.19.1",
     "socket.io": "^1.7.4"
   },
   "engines": {
@@ -12,7 +15,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "debug": "node --nolazy --inspect-brk=9229 app.js"
   },
   "author": "",
   "license": "ISC"

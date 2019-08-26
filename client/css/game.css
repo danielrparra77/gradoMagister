@@ -77,3 +77,8 @@ body {
     border-bottom: 0;
   }
 }
+
+#gameDiv{
+  margin-left: 0px;
+  margin-right: 0px;
+}

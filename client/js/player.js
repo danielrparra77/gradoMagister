@@ -1,4 +1,4 @@
-export function exportPlayersModule(param){
+	export function exportPlayersModule(param){
 	// create a unique, global symbol name
 	// -----------------------------------
 
@@ -36,9 +36,11 @@ export function exportPlayersModule(param){
 		self.spriteAnimCounter = 0;
 		self.moving = false;
 		self.direccionmoving = 3;	//draw right
-
+		var Img = window.Img;
 		Img.player = new Image();
 		Img.player.src = '/client/img/player.png';
+		var ctx = window.ctx;
+		var selfId = window.selfId;		
 		
 		self.draw = function(){	
 			if(Player.list[selfId].map !== self.map)
@@ -48,8 +50,8 @@ export function exportPlayersModule(param){
 			var width = self.width;
 			var height = self.height;
 
-			var x = self.x - Player.list[selfId].x + WIDTH/2 - width/2;
-			var y = self.y - Player.list[selfId].y + HEIGHT/2 - height/2;
+			var x = self.x - Player.list[selfId].x + window.WIDTH/2 - width/2;
+			var y = self.y - Player.list[selfId].y + window.HEIGHT/2 - height/2;
 			
 			var hpWidth = 30 * self.hp / self.hpMax;
 			ctx.fillStyle = 'red';
@@ -107,4 +109,4 @@ export function exportPlayersModule(param){
 	// -----------------------------
 
 	return Player;
-};
+};	 
