@@ -1,3 +1,4 @@
 var hola = {
-    nuevo = true?false:true
+    nuevo = true?false:true,
+    otro:"fdf"
 };
