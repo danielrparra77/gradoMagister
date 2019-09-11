@@ -69,7 +69,26 @@ $(document).ready(function(){
 
 	socket.on("updateScore",function(scores){
 		console.log(scores);
+		scoreDataTable(scores);
 	})
+
+	function scoreDataTable(data) {
+		console.log("populating data table...");
+		// clear the table before populating it with more data
+		$("#score").DataTable().clear();
+		var length = Object.keys(data[self.Player.list[selfId].map]).length;
+		for(var i = 1; i < length+1; i++) {
+		  var score = data[self.Player.list[selfId].map][i];
+		  // You could also use an ajax property on the data table initialization
+		  $('#score').dataTable().fnAddData( [
+			score.username,
+			score.juegosJugados,
+			score.juegosGanados,
+			score.preguntasContestadas,
+			score.preguntasAcertadas
+		  ]);
+		}
+	  }
 	
 	socket.on('update',function(data){
 		//{ player : [{id:123,x:0,y:0},{id:1,x:0,y:0}], bullet: []}

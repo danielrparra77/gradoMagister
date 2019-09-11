@@ -40,6 +40,7 @@ global.Player.onConnect = function(socket,data){
 	socket.emit('panelEscenarios',mapas.cambioMapa(map));
 	data.id = socket.id;
 	data.map = map;
+	data.con = MongoConnector;
 	var player = Player(data);
 	player.socket = socket;
 	player.Disparos = Disparos({

@@ -4,12 +4,14 @@
 		<title>Page Title</title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+		<link rel="stylesheet" type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css">
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 		<link href="/client/css/signin.css" rel="stylesheet">
 		<link href="/client/css/game.css" rel="stylesheet">
 		<!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
 		<script src="/client/js/socket.js">
 		</script>
+		<script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
 	</head>
 	<body class="text-center">
 		<div class="bodysign">
@@ -78,9 +80,17 @@
 					</div>
 					<!--Panel de preguntas para escenario de disparos-->
 					<div">	
-						<div id="tablero de avances">
-							estos serán los avances
-						</div>
+						<table id="score" class="display" cellspacing="0" width="100%">
+							<thead>
+							  <tr>
+								<th>Usuario</th>
+								<th>juegosJugados</th>
+								<th>juegosGanados</th>
+								<th>preguntasContestadas</th>
+								<th>preguntasAcertadas</th>
+							  </tr>
+							</thead>
+						  </table>
 					</div>
 				</div>
 			  </div>

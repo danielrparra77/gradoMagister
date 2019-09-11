@@ -62,6 +62,19 @@ var MongoConnector = function(param){
 			});
 		});
 	};
+	self.findAllData = function(collectionName,query,fields,callback){
+		// Get the documents collection
+		self.connect(function(connector){
+			const db = connector.db;
+	  		const collection = db.collection(collectionName);
+	  		collection.find(query,fields).toArray(function(err, docs) {
+				if (err) throw err;
+				console.log("Found the the record");
+				callback(docs);
+				self.disconnect(connector);
+			});
+		});
+	};
 	self.insertOneData = function(collectionName,object,callback){
 		self.connect(function(connector){
 			const db = connector.db;

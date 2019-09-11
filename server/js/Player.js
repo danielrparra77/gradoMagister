@@ -25,6 +25,7 @@ var Player = function(param){
 	self.maxSpd = 10;
 	self.hpMax = 10;
 	self.hp = 10;
+	self.con = param.con;
 	self.score = {
 		disparos:{
 			juegosJugados:0,
@@ -152,13 +153,34 @@ var Player = function(param){
 
 	self.actualizarScore = function(scoreLink,counter){
 		self.score = self.updateScore(scoreLink,counter,self.score);
-		let scores = [];
+		let scores = {};
+		let usernameSingedIn = [];
 		for (let pl in Player.list){
 			let score = self.score;
-			score.username = self.username;
-			scores.push(score);
+			for (var prop in score) {
+				if (score.hasOwnProperty(prop)) {
+					if (scores[prop]==null)
+						scores[prop] = [];
+					score[prop].username = self.username;
+					scores[prop].push(score[prop]);
+				}
+			}
+			usernameSingedIn.push(self.username);
 		}
-		self.socket.emit("updateScore",scores);
+		self.con.findAllData("users",{username:{ $nin: usernameSingedIn }},{ projection:{username:1,score:1,_id:0}},res=>{
+			for (let index in res){
+				let score = res[index].score;
+				for (var prop in score) {
+					if (score.hasOwnProperty(prop)) {
+						if (scores[prop]==null)
+							scores[prop] = [];
+						score[prop].username = res[index].username;
+						scores[prop].push(score[prop]);
+					}
+				}
+			}
+			self.socket.emit("updateScore",scores);
+		});
 	}
 	
 	Player.list[self.id] = self;
