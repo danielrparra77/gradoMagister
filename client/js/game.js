@@ -75,10 +75,13 @@ $(document).ready(function(){
 	function scoreDataTable(data) {
 		console.log("populating data table...");
 		// clear the table before populating it with more data
-		$("#score").DataTable().clear();
-		var length = Object.keys(data[self.Player.list[selfId].map]).length;
-		for(var i = 1; i < length+1; i++) {
-		  var score = data[self.Player.list[selfId].map][i];
+		$("#score").DataTable().fnClearTable();
+		let escenario = self.Player.list[selfId].map;
+		escenario = escenario=="field"?"disparos":escenario;
+		escenario = escenario=="forest"?"laberinto":escenario;
+		var length = Object.keys(data[escenario]).length;
+		for(var i = 0; i < length; i++) {
+		  var score = data[escenario][i];
 		  // You could also use an ajax property on the data table initialization
 		  $('#score').dataTable().fnAddData( [
 			score.username,

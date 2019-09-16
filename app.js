@@ -72,6 +72,7 @@ global.Player.onConnect = function(socket,data){
 		else
 			player.map = 'field';
 		socket.emit('panelEscenarios',mapas.cambioMapa(player.map));
+		player.onMapChanged();
 	});
 	
 	socket.on('sendMsgToServer',function(data){

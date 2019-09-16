@@ -60,7 +60,7 @@
 		        </nav>
 		        <h3 class="text-muted">Project name</h3>
 			  </div>
-			  <div class="row">
+			<div class="row">
 				<div class="col-xs-12 col-6" style="height:628px;">
 					<div id="game" class="jumbotron" style="position:absolute;width:564px;height:100%;">
 						<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
@@ -78,24 +78,9 @@
 							enviar Respuesta
 						</button>
 					</div>
-					<!--Panel de preguntas para escenario de disparos-->
-					<div">	
-						<table id="score" class="display" cellspacing="0" width="100%">
-							<thead>
-							  <tr>
-								<th>Usuario</th>
-								<th>juegosJugados</th>
-								<th>juegosGanados</th>
-								<th>preguntasContestadas</th>
-								<th>preguntasAcertadas</th>
-							  </tr>
-							</thead>
-						  </table>
-					</div>
 				</div>
-			  </div>
-			
-			<div id="belowGame" style="margin-top:670px">	
+			</div>
+			<div class="row">
 				<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
 					<div>Hello!</div>
 				</div>
@@ -103,6 +88,20 @@
 				<form id="chat-form">
 					<input id="chat-input" type="text" style="width:500px"></input>
 				</form>
+			</div>
+			<!--Panel de preguntas para escenario de disparos-->
+			<div class="row">	
+				<table id="score" class="display" cellspacing="0" width="100%">
+					<thead>
+					  <tr>
+						<th>Usuario</th>
+						<th>juegosJugados</th>
+						<th>juegosGanados</th>
+						<th>preguntasContestadas</th>
+						<th>preguntasAcertadas</th>
+					  </tr>
+					</thead>
+				  </table>
 			</div>
 		</div>
 		<!-- Modal de preguntas para escenario de laberinto-->

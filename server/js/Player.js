@@ -34,10 +34,10 @@ var Player = function(param){
 			preguntasAcertadas:0
 		},
 		laberinto:{
-			jeugosJugados:0,
-			JuegosGanados:0,
+			juegosJugados:0,
+			juegosGanados:0,
 			preguntasContestadas:0,
-			PreguntasAcertadas:0
+			preguntasAcertadas:0
 		}
 	};
 	if(typeof param.score !== "undefined"){
@@ -156,16 +156,17 @@ var Player = function(param){
 		let scores = {};
 		let usernameSingedIn = [];
 		for (let pl in Player.list){
-			let score = self.score;
+			let itplayer = Player.list[pl];
+			let score = itplayer.score;
 			for (var prop in score) {
 				if (score.hasOwnProperty(prop)) {
 					if (scores[prop]==null)
 						scores[prop] = [];
-					score[prop].username = self.username;
+					score[prop].username = itplayer.username;
 					scores[prop].push(score[prop]);
 				}
 			}
-			usernameSingedIn.push(self.username);
+			usernameSingedIn.push(itplayer.username);
 		}
 		self.con.findAllData("users",{username:{ $nin: usernameSingedIn }},{ projection:{username:1,score:1,_id:0}},res=>{
 			for (let index in res){
@@ -181,10 +182,20 @@ var Player = function(param){
 			}
 			self.socket.emit("updateScore",scores);
 		});
+		self.savePlayerProgress(self.con,res=>{
+
+		});
 	}
 	
 	Player.list[self.id] = self;
-	
+
+	self.onMapChanged = function(){	
+		if (self.map =="field")
+			self.actualizarScore(["disparos","juegosGanados"],0);
+		if (self.map =="forest")
+			self.actualizarScore(["laberinto","juegosGanados"],0);
+	}
+	self.onMapChanged();
 	global.initPack.player.push(self.getInitPack());
 	if (param.isNew == true){
 		self.pass = param.pass;
